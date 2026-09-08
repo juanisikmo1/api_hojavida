@@ -17,7 +17,7 @@ def probar_data():
 def actualizarhv(id):
 
     #recibir los datos enviados
-    datos = request.json()
+    datos = request.json
     conec = conectar_bd()
     cursor = conec.cursor()
 
@@ -26,7 +26,7 @@ def actualizarhv(id):
     cursor.execute(buscar,(id,))
     resul = cursor.fetchone()
 
-    if resul is not None:
+    if resul is None:
         cursor.close()
         conec.close()
         return{"mensaje":"No se encontro la hoja de vida"}, 404
@@ -34,7 +34,7 @@ def actualizarhv(id):
     sqlcorreo = """SELECT id FROM hojas_vida WHERE correo = %s and id !=%s"""
     cursor.execute(sqlcorreo,(datos["correo"], id))
     resul = cursor.fetchone()
-    if resul is None:
+    if resul is not None:
             cursor.close()
             conec.close()
             return{
@@ -50,7 +50,8 @@ def actualizarhv(id):
             datos.get("fotografia"),
             datos["programa"],
             datos["ficha"],
-            datos["jornada"]
+            datos["jornada"],
+            id
         )
     cursor.execute(sqlactualizar,valor)
     conec.commit()
