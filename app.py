@@ -335,5 +335,182 @@ def eliminar_estudio(id):
         "mensaje": "Estudio eliminado"
     }
 
+#Consultar las experiencias laborales
+@app.route("/api/hojas-vida/<int:id>/experiencias", methods=["GET"])
+def obtener_experiencias(id):
+
+    conec = conectar_bd()
+    cursor = conec.cursor(dictionary=True)
+
+    # Verificar que la hoja de vida exista
+    sql_verificar = "SELECT id FROM hojas_vida WHERE id = %s"
+    cursor.execute(sql_verificar, (id,))
+    hoja = cursor.fetchone()
+
+    if hoja is None:
+        cursor.close()
+        conec.close()
+        return {"mensaje": "No se encontro la hoja de vida"}, 404
+
+    # Consultar las experiencias
+    sql = """SELECT id, hoja_vida_id, empresa, cargo, tiempo, funciones
+             FROM experiencias
+             WHERE hoja_vida_id = %s"""
+
+    cursor.execute(sql, (id,))
+    experiencias = cursor.fetchall()
+
+    cursor.close()
+    conec.close()
+
+    return experiencias
+
+
+#Registrar una nueva experiencia
+@app.route("/api/hojas-vida/<int:id>/experiencias", methods=["POST"])
+def registrar_experiencia(id):
+
+    datos = request.json
+
+    conec = conectar_bd()
+    cursor = conec.cursor()
+
+    #Verificar que la hoja de vida exista
+    sql_verificar = "SELECT id FROM hojas_vida WHERE id = %s"
+    cursor.execute(sql_verificar, (id,))
+    hoja = cursor.fetchone()
+
+    if hoja is None:
+        cursor.close()
+        conec.close()
+        return {"mensaje": "No se encontro la hoja de vida"}, 404
+
+    #Registrar la experiencia
+    sql = """INSERT INTO experiencias
+             (hoja_vida_id, empresa, cargo, tiempo, funciones)
+             VALUES (%s, %s, %s, %s, %s)"""
+
+    valores = (
+        id,
+        datos["empresa"],
+        datos["cargo"],
+        datos["tiempo"],
+        datos["funciones"]
+    )
+
+    cursor.execute(sql, valores)
+    conec.commit()
+
+    id_generado = cursor.lastrowid
+
+    cursor.close()
+    conec.close()
+
+    return {
+        "mensaje": "Experiencia registrada",
+        "id": id_generado,
+        "hoja_vida_id": id
+    }, 201
+
+
+#Consultar una experiencia
+@app.route("/api/experiencias/<int:id>", methods=["GET"])
+def obtener_experiencia(id):
+
+    conec = conectar_bd()
+    cursor = conec.cursor(dictionary=True)
+
+    sql = """SELECT id, hoja_vida_id, empresa, cargo, tiempo, funciones
+             FROM experiencias
+             WHERE id = %s"""
+
+    cursor.execute(sql, (id,))
+    experiencia = cursor.fetchone()
+
+    cursor.close()
+    conec.close()
+
+    if experiencia is None:
+        return {"mensaje": "No se encontro la experiencia"}, 404
+
+    return experiencia
+
+
+#Actualizar una experiencia
+@app.route("/api/experiencias/<int:id>", methods=["PUT"])
+def actualizar_experiencia(id):
+
+    datos = request.json
+
+    conec = conectar_bd()
+    cursor = conec.cursor()
+
+    #Verificar que la experiencia exista
+    sql_verificar = "SELECT id FROM experiencias WHERE id = %s"
+    cursor.execute(sql_verificar, (id,))
+    experiencia = cursor.fetchone()
+
+    if experiencia is None:
+        cursor.close()
+        conec.close()
+        return {"mensaje": "No se encontro la experiencia"}, 404
+
+    #Actualizar experiencia
+    sql = """UPDATE experiencias
+             SET empresa = %s,
+                 cargo = %s,
+                 tiempo = %s,
+                 funciones = %s
+             WHERE id = %s"""
+
+    valores = (
+        datos["empresa"],
+        datos["cargo"],
+        datos["tiempo"],
+        datos["funciones"],
+        id
+    )
+
+    cursor.execute(sql, valores)
+    conec.commit()
+
+    cursor.close()
+    conec.close()
+
+    return {
+        "mensaje": "Experiencia actualizada",
+        "id": id
+    }
+
+
+#Eliminar una experiencia
+@app.route("/api/experiencias/<int:id>", methods=["DELETE"])
+def eliminar_experiencia(id):
+
+    conec = conectar_bd()
+    cursor = conec.cursor()
+
+    #Verificar que la experiencia exista
+    sql_verificar = "SELECT id FROM experiencias WHERE id = %s"
+    cursor.execute(sql_verificar, (id,))
+    experiencia = cursor.fetchone()
+
+    if experiencia is None:
+        cursor.close()
+        conec.close()
+        return {"mensaje": "No se encontro la experiencia"}, 404
+
+    #Eliminar experiencia
+    sql = "DELETE FROM experiencias WHERE id = %s"
+    cursor.execute(sql, (id,))
+    conec.commit()
+
+    cursor.close()
+    conec.close()
+
+    return {
+        "mensaje": "Experiencia eliminada"
+    }
+
 if __name__=="__main__":
     app.run(debug=True)
