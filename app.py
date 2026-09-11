@@ -825,5 +825,82 @@ def eliminar_curso(id):
         "mensaje": "Curso eliminado"
     }
 
+
+@app.route("/api/hojas-vida/<int:id>/completa", methods=["GET"])
+def obtener_hoja_vida_completa(id):
+
+    conec = conectar_bd()
+    cursor = conec.cursor(dictionary=True)
+
+
+    sql_hoja = """SELECT id, nombre, edad, ciudad, correo,
+                         fotografia, programa, ficha, jornada
+                  FROM hojas_vida
+                  WHERE id = %s"""
+
+    cursor.execute(sql_hoja, (id,))
+    hoja = cursor.fetchone()
+
+    # Verificar que la hoja de vida exista
+    if hoja is None:
+        cursor.close()
+        conec.close()
+
+        return {
+            "mensaje": "No se encontro la hoja de vida"
+        }, 404
+
+
+    sql_estudios = """SELECT id, hoja_vida_id, nivel,
+                             institucion, titulo, anio_graduacion
+                      FROM estudios
+                      WHERE hoja_vida_id = %s"""
+
+    cursor.execute(sql_estudios, (id,))
+    estudios = cursor.fetchall()
+
+    sql_cursos = """SELECT id, hoja_vida_id, nombre
+                    FROM cursos
+                    WHERE hoja_vida_id = %s"""
+
+    cursor.execute(sql_cursos, (id,))
+    cursos = cursor.fetchall()
+
+
+    sql_experiencias = """SELECT id, hoja_vida_id, empresa,
+                                 cargo, tiempo, funciones
+                          FROM experiencias
+                          WHERE hoja_vida_id = %s"""
+
+    cursor.execute(sql_experiencias, (id,))
+    experiencias = cursor.fetchall()
+
+    for experiencia in experiencias:
+
+        sql_habilidades = """SELECT id, experiencia_id, nombre
+                             FROM habilidades
+                             WHERE experiencia_id = %s"""
+
+        cursor.execute(
+            sql_habilidades,
+            (experiencia["id"],)
+        )
+
+        habilidades = cursor.fetchall()
+
+        experiencia["habilidades"] = habilidades
+
+    cursor.close()
+    conec.close()
+
+    respuesta = {
+        "datos_personales": hoja,
+        "informacion_academica": estudios,
+        "cursos": cursos,
+        "experiencia_laboral": experiencias
+    }
+
+    return respuesta
+
 if __name__=="__main__":
     app.run(debug=True)
