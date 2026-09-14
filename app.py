@@ -165,7 +165,7 @@ def obtener_hojasvida():
     return hojas_vida
 
 #consultar los estudios asociados a una hoja de vida
-@app.route("/api/hojas-vida/int:id/estudios", methods=["GET"])
+@app.route("/api/hojas-vida/<int:id>/estudios", methods=["GET"])
 def obtener_estudios(id):
     conec = conectar_bd()
     cursor = conec.cursor(dictionary=True)
@@ -194,7 +194,7 @@ def obtener_estudios(id):
     return estudios
 
 #registrar un nuevo estudio
-@app.route("/api/hojas-vida/int:id/estudios", methods=["POST"])
+@app.route("/api/hojas-vida/<int:id>/estudios", methods=["POST"])
 def registrar_estudio(id):
     datos = request.json
 
@@ -239,7 +239,7 @@ def registrar_estudio(id):
     }, 201
 
 #Consultar un estudio específico
-@app.route("/api/estudios/int:id", methods=["GET"])
+@app.route("/api/estudios/<int:id>", methods=["GET"])
 def obtener_estudio(id):
 
     conec = conectar_bd()
@@ -261,7 +261,7 @@ def obtener_estudio(id):
     return estudio
 
 #Actualizar un estudio
-@app.route("/api/estudios/int:id", methods=["PUT"])
+@app.route("/api/estudios/<int:id>", methods=["PUT"])
 def actualizar_estudio(id):
 
     datos = request.json
@@ -307,7 +307,7 @@ def actualizar_estudio(id):
     }
 
 #Eliminar un estudio
-@app.route("/api/estudios/int:id", methods=["DELETE"])
+@app.route("/api/estudios/<int:id>", methods=["DELETE"])
 def eliminar_estudio(id):
 
     conec = conectar_bd()
